@@ -1,4 +1,3 @@
-```markdown:AWS_EKS_NodeGroup_Tagging/readme.md
 # AWS EKS NodeGroup Resource Tagger
 
 ## Table of Contents
@@ -169,67 +168,10 @@ Common Issues and Solutions:
    - Default retry attempts: 3
    - Adjustable through `MAX_RETRIES` environment variable
 
-### CI/CD Integration
-
-#### GitHub Actions Example
-```yaml
-name: Tag EKS NodeGroup Resources
-on:
-  schedule:
-    - cron: '0 0 * * *'  # Daily at midnight
-  workflow_dispatch:
-
-jobs:
-  tag-resources:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-      - name: Run Tagging Script
-        run: |
-          chmod +x AWS-NodeGroup-Tag.sh
-          ./AWS-NodeGroup-Tag.sh -n production-nodes -t Production
-```
-
-#### GitLab CI Example
-```yaml
-tag-nodegroup:
-  image: amazon/aws-cli
-  script:
-    - chmod +x AWS-NodeGroup-Tag.sh
-    - ./AWS-NodeGroup-Tag.sh -n staging-nodes -t Staging
-  only:
-    - schedules
-```
-
-#### Jenkins Pipeline Example
-```groovy
-pipeline {
-    agent any
-    environment {
-        AWS_CREDENTIALS = credentials('aws-credentials')
-    }
-    stages {
-        stage('Tag Resources') {
-            steps {
-                sh '''
-                    chmod +x AWS-NodeGroup-Tag.sh
-                    ./AWS-NodeGroup-Tag.sh -n dev-nodes -t Development
-                '''
-            }
-        }
-    }
-}
-```
-
 ### Error Handling
 
 The script will exit with an error message if:
+
 - Required parameters are missing
 - AWS CLI is not installed
 - No instances are found in the specified NodeGroup
