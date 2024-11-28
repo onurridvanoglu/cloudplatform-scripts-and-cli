@@ -1,6 +1,7 @@
 # AWS EKS NodeGroup Resource Tagger
 
 ## Table of Contents
+
 - [Features](#features)
 - [Prerequisites](#prerequisites)
 - [Usage](#usage)
@@ -9,7 +10,6 @@
 - [Sample Output](#sample-output)
 - [Troubleshooting](#troubleshooting)
 - [Performance Considerations](#performance-considerations)
-- [CI/CD Integration](#cicd-integration)
 - [Error Handling](#error-handling)
 - [Security Notes](#security-notes)
 - [Contributing](#contributing)
@@ -54,6 +54,7 @@ Tag resources:
 ```
 
 Preview changes with dry run:
+
 ```bash
 ./AWS-NodeGroup-Tag.sh -n MyNodeGroup -t ProjectA -d
 ```
@@ -61,11 +62,13 @@ Preview changes with dry run:
 ### Installation
 
 1. Download the script:
+
 ```bash
 curl -O https://raw.githubusercontent.com/your-repo/AWS-NodeGroup-Tag.sh
 ```
 
 2. Make it executable:
+
 ```bash
 chmod +x AWS-NodeGroup-Tag.sh
 ```
