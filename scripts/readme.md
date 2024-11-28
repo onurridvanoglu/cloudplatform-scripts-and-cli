@@ -1,9 +1,25 @@
 ```markdown:AWS_EKS_NodeGroup_Tagging/readme.md
 # AWS EKS NodeGroup Resource Tagger
 
+## Table of Contents
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Usage](#usage)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Sample Output](#sample-output)
+- [Troubleshooting](#troubleshooting)
+- [Performance Considerations](#performance-considerations)
+- [CI/CD Integration](#cicd-integration)
+- [Error Handling](#error-handling)
+- [Security Notes](#security-notes)
+- [Contributing](#contributing)
+- [License](#license)
+- [Support](#support)
+
 A bash script that automatically tags AWS EKS NodeGroup resources (EC2 instances and EBS volumes) with CostCenter tags for better cost tracking and management.
 
-## Features
+### Features
 
 - Automatically tags EC2 instances in specified EKS NodeGroup
 - Tags all attached EBS volumes
@@ -12,7 +28,7 @@ A bash script that automatically tags AWS EKS NodeGroup resources (EC2 instances
 - Handles errors gracefully
 - Validates inputs and AWS CLI availability
 
-## Prerequisites
+### Prerequisites
 
 - AWS CLI installed and configured
 - Appropriate AWS IAM permissions:
@@ -20,7 +36,7 @@ A bash script that automatically tags AWS EKS NodeGroup resources (EC2 instances
   - `ec2:DescribeVolumes`
   - `ec2:CreateTags`
 
-## Usage
+### Usage
 
 ```bash
 ./AWS-NodeGroup-Tag.sh [-n NODEGROUP_NAME] [-t TAG_VALUE] [-d] [-h]
@@ -32,7 +48,7 @@ Options:
   -h  Show help message
 ```
 
-### Examples
+#### Examples
 
 Tag resources:
 ```bash
@@ -44,7 +60,7 @@ Preview changes with dry run:
 ./AWS-NodeGroup-Tag.sh -n MyNodeGroup -t ProjectA -d
 ```
 
-## Installation
+### Installation
 
 1. Download the script:
 ```bash
@@ -56,7 +72,7 @@ curl -O https://raw.githubusercontent.com/your-repo/AWS-NodeGroup-Tag.sh
 chmod +x AWS-NodeGroup-Tag.sh
 ```
 
-## Sample Output
+### Sample Output
 
 ```
 [2024-03-21 10:30:15] Starting tagging process for NodeGroup: MyNodeGroup
@@ -68,7 +84,150 @@ chmod +x AWS-NodeGroup-Tag.sh
 [2024-03-21 10:30:21] Tagging process completed successfully
 ```
 
-## Error Handling
+### Configuration
+
+The script can be configured through environment variables or command-line arguments:
+
+Environment Variables:
+- `AWS_REGION`: Override default AWS region
+- `AWS_PROFILE`: Specify AWS CLI profile
+- `TAG_PREFIX`: Customize the tag prefix (default: "CostCenter")
+- `LOG_LEVEL`: Set logging verbosity (DEBUG|INFO|ERROR)
+
+Configuration File (optional):
+Create `.nodegroup-tagger.conf` in the same directory:
+```ini
+AWS_REGION=us-west-2
+TAG_PREFIX=Department
+LOG_LEVEL=INFO
+```
+
+### Troubleshooting
+
+Common Issues and Solutions:
+
+1. **AWS CLI Authentication Errors**
+   ```bash
+   Error: Unable to locate credentials
+   ```
+   Solution: Run `aws configure` or set AWS environment variables:
+   ```bash
+   export AWS_ACCESS_KEY_ID="your_access_key"
+   export AWS_SECRET_ACCESS_KEY="your_secret_key"
+   ```
+
+2. **NodeGroup Not Found**
+   ```bash
+   Error: No instances found for NodeGroup
+   ```
+   Solution: 
+   - Verify NodeGroup name is correct
+   - Check if instances are running
+   - Ensure correct AWS region is set
+
+3. **Permission Denied**
+   ```bash
+   Error: User is not authorized to perform action
+   ```
+   Solution: Verify IAM permissions include:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Action": [
+           "ec2:DescribeInstances",
+           "ec2:DescribeVolumes",
+           "ec2:CreateTags"
+         ],
+         "Resource": "*"
+       }
+     ]
+   }
+   ```
+
+4. **Script Execution Issues**
+   - Ensure script has execute permissions: `chmod +x AWS-NodeGroup-Tag.sh`
+   - Check bash version: `bash --version` (requires 4.0+)
+   - Verify line endings are Unix-style: `dos2unix AWS-NodeGroup-Tag.sh`
+
+### Performance Considerations
+
+1. **Resource Impact**
+   - Script performs API calls in batches of 20 resources
+   - Average runtime: 1-2 seconds per instance
+   - Memory usage: ~50MB maximum
+
+2. **Optimization Tips**
+   - Use AWS_PAGER="" to disable CLI paging
+   - Enable JMESPath query optimization
+   - Consider running during off-peak hours
+
+3. **Rate Limiting**
+   - Implements exponential backoff
+   - Default retry attempts: 3
+   - Adjustable through `MAX_RETRIES` environment variable
+
+### CI/CD Integration
+
+#### GitHub Actions Example
+```yaml
+name: Tag EKS NodeGroup Resources
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight
+  workflow_dispatch:
+
+jobs:
+  tag-resources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+      - name: Run Tagging Script
+        run: |
+          chmod +x AWS-NodeGroup-Tag.sh
+          ./AWS-NodeGroup-Tag.sh -n production-nodes -t Production
+```
+
+#### GitLab CI Example
+```yaml
+tag-nodegroup:
+  image: amazon/aws-cli
+  script:
+    - chmod +x AWS-NodeGroup-Tag.sh
+    - ./AWS-NodeGroup-Tag.sh -n staging-nodes -t Staging
+  only:
+    - schedules
+```
+
+#### Jenkins Pipeline Example
+```groovy
+pipeline {
+    agent any
+    environment {
+        AWS_CREDENTIALS = credentials('aws-credentials')
+    }
+    stages {
+        stage('Tag Resources') {
+            steps {
+                sh '''
+                    chmod +x AWS-NodeGroup-Tag.sh
+                    ./AWS-NodeGroup-Tag.sh -n dev-nodes -t Development
+                '''
+            }
+        }
+    }
+}
+```
+
+### Error Handling
 
 The script will exit with an error message if:
 - Required parameters are missing
@@ -77,21 +236,21 @@ The script will exit with an error message if:
 - Tagging operations fail
 - AWS credentials are invalid or expired
 
-## Security Notes
+### Security Notes
 
 - Use appropriate IAM roles with least privilege
 - Review changes in dry-run mode before actual execution
 - Keep AWS credentials secure and regularly rotated
 
-## Contributing
+### Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
+### License
 
 MIT License
 
-## Support
+### Support
 
 For issues and feature requests, please create an issue in the repository.
 ```
