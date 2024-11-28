@@ -45,7 +45,6 @@ Options:
   -t  CostCenter tag value (required)
   -d  Dry run mode
   -h  Show help message
-```
 
 #### Examples
 
