@@ -1,0 +1,16 @@
+# Ignore all log files
+*.log
+
+# Ignore all CSV files
+*.csv
+
+# Specific inventory files
+**/ec2_inventory_*
+**/s3_inventory_*
+**/aws-ec2-inventory_*
+**/aws-s3-inventory_*
+**/gcp-instances-all-projects_*
+
+# Keep template/example CSV files if needed
+!template.csv
+!example.csv 
