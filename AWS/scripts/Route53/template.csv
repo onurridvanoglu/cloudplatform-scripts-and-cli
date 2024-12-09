@@ -1,0 +1,3 @@
+Zone ID,Zone Name,Private Zone,Record Count,Comment,NS Records,SOA Record,Tags,Record Name,Record Type,Record Value,Record TTL,Routing Policy
+Z1234567890ABC,example.com.,false,10,"Main website","ns-1234.awsdns-12.org.,ns-567.awsdns-34.com.","ns-1234.awsdns-12.org. hostmaster.example.com. 1 7200 900 1209600 86400","Environment=prod,Project=website",example.com.,A,192.0.2.1,300,Simple
+Z0987654321DEF,internal.com.,true,5,"Internal DNS","ns-5678.awsdns-56.net.,ns-901.awsdns-78.com.","ns-5678.awsdns-56.net. hostmaster.internal.com. 1 7200 900 1209600 86400","Environment=prod,Project=internal",*.internal.com.,CNAME,lb.internal.com,3600,Simple 
