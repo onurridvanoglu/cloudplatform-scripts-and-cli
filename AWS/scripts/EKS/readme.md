@@ -75,7 +75,7 @@ chmod +x AWS-NodeGroup-Tag.sh
 
 ### Sample Output
 
-```
+```bash
 [2024-03-21 10:30:15] Starting tagging process for NodeGroup: MyNodeGroup
 [2024-03-21 10:30:16] Fetching instances for NodeGroup
 [2024-03-21 10:30:17] Tagging Instance resources: i-1234567890abcdef0
@@ -90,6 +90,7 @@ chmod +x AWS-NodeGroup-Tag.sh
 The script can be configured through environment variables or command-line arguments:
 
 Environment Variables:
+
 - `AWS_REGION`: Override default AWS region
 - `AWS_PROFILE`: Specify AWS CLI profile
 - `TAG_PREFIX`: Customize the tag prefix (default: "CostCenter")
@@ -97,6 +98,7 @@ Environment Variables:
 
 Configuration File (optional):
 Create `.nodegroup-tagger.conf` in the same directory:
+
 ```ini
 AWS_REGION=us-west-2
 TAG_PREFIX=Department
@@ -108,29 +110,38 @@ LOG_LEVEL=INFO
 Common Issues and Solutions:
 
 1. **AWS CLI Authentication Errors**
+
    ```bash
    Error: Unable to locate credentials
    ```
+
    Solution: Run `aws configure` or set AWS environment variables:
+
    ```bash
    export AWS_ACCESS_KEY_ID="your_access_key"
    export AWS_SECRET_ACCESS_KEY="your_secret_key"
    ```
 
 2. **NodeGroup Not Found**
+
    ```bash
    Error: No instances found for NodeGroup
    ```
-   Solution: 
+
+   Solution:
+
    - Verify NodeGroup name is correct
    - Check if instances are running
    - Ensure correct AWS region is set
 
 3. **Permission Denied**
+
    ```bash
    Error: User is not authorized to perform action
    ```
+
    Solution: Verify IAM permissions include:
+
    ```json
    {
      "Version": "2012-10-17",
@@ -197,6 +208,7 @@ MIT License
 ### Support
 
 For issues and feature requests, please create an issue in the repository.
-```
+
+```bash
 
 This README provides essential information for users to understand and use the script effectively. The format is concise yet informative, focusing on practical usage while including important security and prerequisite information.
