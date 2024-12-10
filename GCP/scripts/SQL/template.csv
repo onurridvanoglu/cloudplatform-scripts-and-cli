@@ -1,0 +1,3 @@
+project,instance_name,database_version,tier,region,availability_type,storage_size_gb,backup_enabled,private_ip,public_ip,state,creation_time,labels
+project-id-1,sql-instance-1,MYSQL_8_0,db-n1-standard-2,us-central1,ZONAL,100,true,10.0.0.3,34.68.X.X,RUNNING,2023-01-01T00:00:00Z,env=prod;team=dba
+project-id-2,sql-instance-2,POSTGRES_13,db-custom-2-8192,us-east1,REGIONAL,200,true,10.0.1.3,,RUNNING,2023-01-02T00:00:00Z,env=dev;team=backend 
