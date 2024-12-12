@@ -1,57 +1,64 @@
-# AWS Inventory Scripts
+# AWS Scripts Documentation
 
 This directory contains scripts for gathering inventory information from various AWS services.
 
-## Main Script
+## Available Scripts
 
-### AWS-inventory-all.sh
+### Service-Specific Inventory Scripts
 
-This script runs all individual service inventory scripts and collects their outputs in a single directory.
+1. [EC2](EC2/README.md)
+   - `AWS-EC2-inventory.sh` - Inventory of EC2 instances
+   - Includes instance details, types, states, IPs, and tags
 
-#### Usage
+2. [RDS](RDS/README.md)
+   - `AWS-RDS-inventory.sh` - Inventory of RDS instances
+   - Includes database instances, types, versions, and configurations
 
-```bash
-./AWS-inventory-all.sh -r REGION [-o output_directory]
-```
+3. [S3](S3/README.md)
+   - `AWS-S3-inventory.sh` - Inventory of S3 buckets
+   - Includes bucket details, versioning, encryption settings
 
-#### Options
+4. [ELB](ELB/README.md)
+   - `AWS-ELB-inventory.sh` - Inventory of Elastic Load Balancers
+   - Includes load balancer configurations, listeners, and target groups
 
-- `-h, --help`           Show help message
-- `-r, --region`         AWS region (required)
-- `-o, --output-dir`     Output directory (default: aws-inventory_TIMESTAMP)
+5. [Route53](Route53/README.md)
+   - `AWS-Route53-inventory.sh` - Inventory of Route53 hosted zones
+   - Includes DNS zones, records, and configurations
 
-#### Example
+### Comprehensive Inventory Script
 
-```bash
-./AWS-inventory-all.sh -r us-east-1 -o my-inventory
-```
+The [general-aws-inventory](general-aws-inventory/README.md) directory contains:
+- `AWS-inventory-all.sh` - Runs all individual inventory scripts
+- Template files showing expected output formats
+- Comprehensive documentation
 
-This will create a directory 'my-inventory' containing:
-- ec2-inventory.csv
-- rds-inventory.csv
-- s3-inventory.csv
-- elb-inventory.csv
-- route53-inventory.csv
-- aws_inventory_all_TIMESTAMP.log
-
-#### Prerequisites
+## Prerequisites
 
 1. AWS CLI installed and configured
-2. Appropriate IAM permissions for all services:
-   - EC2: ec2:Describe*
-   - RDS: rds:Describe*
-   - S3: s3:List*, s3:GetBucket*
-   - ELB: elasticloadbalancing:Describe*
-   - Route53: route53:List*, route53:Get*
+2. Appropriate IAM permissions for services being inventoried
+3. Bash shell environment
 
-## Individual Service Scripts
+## Usage
 
-The following service-specific inventory scripts are available:
+Each script can be run individually from its respective directory, or you can use the comprehensive inventory script:
 
-1. [EC2](EC2/README.md) - EC2 instance inventory
-2. [RDS](RDS/README.md) - RDS instance inventory
-3. [S3](S3/README.md) - S3 bucket inventory
-4. [ELB](ELB/README.md) - Load balancer inventory
-5. [Route53](Route53/README.md) - Route53 hosted zones inventory
+```bash
+# Individual service inventory
+./EC2/AWS-EC2-inventory.sh -r REGION [-o output.csv]
+./RDS/AWS-RDS-inventory.sh -r REGION [-o output.csv]
+./S3/AWS-S3-inventory.sh [-o output.csv]
+./ELB/AWS-ELB-inventory.sh -r REGION [-o output.csv]
+./Route53/AWS-Route53-inventory.sh [-o output.csv]
 
-Each script can be run individually. See their respective README files for details. 
+# Comprehensive inventory
+./general-aws-inventory/AWS-inventory-all.sh -r REGION [-o output_directory]
+```
+
+## Output Format
+
+Each script generates:
+1. CSV file with inventory data
+2. Log file with execution details
+
+See individual script documentation and templates for specific output formats. 
