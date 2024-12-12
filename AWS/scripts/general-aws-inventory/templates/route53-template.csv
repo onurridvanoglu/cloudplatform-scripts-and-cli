@@ -1,0 +1,3 @@
+Zone ID,Zone Name,Private Zone,Record Count,Comment,NS Records,SOA Record,Tags
+Z123456789ABCD,example.com,false,10,"Main website","ns-1.awsdns.com,ns-2.awsdns.com","ns-1.awsdns.com admin.example.com 1 7200 900 1209600 86400","Environment=prod,Project=web"
+Z987654321DCBA,internal.example.com,true,5,"Internal DNS",ns-3.awsdns.com,ns-3.awsdns.com,"Environment=prod,Project=internal" 

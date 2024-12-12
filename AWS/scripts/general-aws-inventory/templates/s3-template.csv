@@ -1,0 +1,3 @@
+Bucket Name,Creation Date,Region,Versioning,Encryption,Public Access Blocked,Tags
+my-prod-bucket,2024-01-15T10:00:00.000Z,us-east-1,Enabled,Enabled,Enabled,"Environment=prod,Project=web"
+my-dev-bucket,2024-01-16T12:30:00.000Z,us-west-2,Disabled,Enabled,Enabled,"Environment=dev,Project=app" 

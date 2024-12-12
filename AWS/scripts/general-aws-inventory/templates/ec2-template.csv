@@ -1,0 +1,3 @@
+Instance ID,Name,Instance Type,State,Private IP,Public IP,VPC ID,Subnet ID,Platform,CPU Count,Memory (GiB),Total Volume Size,Tags,Launch Time
+i-0123456789abcdef0,web-server-1,t3.medium,running,10.0.1.10,54.X.X.X,vpc-abc123,subnet-xyz789,linux,2,4.0,30,"Name=web-server-1,Environment=prod",2024-01-15T10:00:00.000Z
+i-0123456789abcdef1,app-server-1,r5.large,stopped,10.0.2.20,,vpc-abc123,subnet-xyz789,linux,2,16.0,100,"Name=app-server-1,Environment=dev",2024-01-16T12:30:00.000Z 

@@ -1,0 +1,3 @@
+DB Instance ID,DB Instance Class,Engine,Engine Version,Status,Storage Type,Storage Size (GB),Multi-AZ,Publicly Accessible,Endpoint,Port,Creation Time,Backup Retention,Tags
+db-prod-1,db.r5.large,mysql,8.0.28,available,gp3,100,true,false,db-prod-1.xxxxx.region.rds.amazonaws.com,3306,2024-01-15T10:00:00.000Z,7,"Environment=prod,Name=main-db"
+db-dev-1,db.t3.medium,postgres,13.7,available,gp2,50,false,false,db-dev-1.xxxxx.region.rds.amazonaws.com,5432,2024-01-16T12:30:00.000Z,1,"Environment=dev,Name=test-db" 

@@ -1,0 +1,3 @@
+Load Balancer Name,Type,Scheme,VPC ID,State,DNS Name,Created Time,AZ Count,Security Groups,Listeners,Target Groups,Tags
+prod-web-alb,application,internet-facing,vpc-abc123,active,prod-web.xxxxx.elb.amazonaws.com,2024-01-15T10:00:00.000Z,2,sg-123abc,"HTTP:80,HTTPS:443","web-tg-1,web-tg-2","Environment=prod,Name=web-alb"
+internal-app-nlb,network,internal,vpc-xyz789,active,internal-app.xxxxx.elb.amazonaws.com,2024-01-16T12:30:00.000Z,3,,"TCP:80,TCP:443",app-tg-1,"Environment=dev,Name=app-nlb" 

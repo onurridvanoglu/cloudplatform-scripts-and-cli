@@ -13,4 +13,9 @@
 
 # Keep template/example CSV files if needed
 !template.csv
-!example.csv 
+!example.csv
+!ec2-template.csv
+!s3-template.csv
+!rds-template.csv
+!elb-template.csv
+!route53-template.csv
