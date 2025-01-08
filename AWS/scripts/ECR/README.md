@@ -4,7 +4,7 @@ This directory contains scripts for AWS Elastic Container Registry (ECR) managem
 
 ## Available Scripts
 
-### list-ecr-repository.sh
+### 1. list-ecr-repository.sh
 
 A script to list all ECR repositories that:
 
@@ -13,20 +13,55 @@ A script to list all ECR repositories that:
 - Identifies registry/account ID
 - Creates execution log
 
-#### Usage
-
-```bash
+**Usage:**
+```
 ./list-ecr-repository.sh
 ```
 
-#### Output Format
+**Output Format:**
 
 The script generates a CSV file with the following columns:
-
 - Repository Name
 - Repository URI
 - Created Date
 - Registry ID (AWS Account ID)
+
+### 2. tag-repository.sh
+
+A script that automatically tags ECR repositories with CostCenter tag:
+
+- Checks and tags all ECR repositories in eu-west-1
+- Adds `CostCenter:BT` tag if not present
+- Skips repositories that already have the CostCenter tag
+- Provides detailed logging and execution summary
+
+**Usage:**
+```
+./tag-repository.sh
+```
+
+**Requirements:**
+- AWS CLI installed
+- Valid AWS credentials configured
+- Required ECR permissions:
+  - ecr:ListTagsForResource
+  - ecr:TagResource
+
+**Output:**
+- Creates timestamped log file with all operations
+- Provides summary showing:
+  - Total repositories processed
+  - Successfully tagged repositories
+  - Skipped repositories (already tagged)
+  - Failed operations
+
+## Common Requirements
+
+Both scripts require:
+- Bash shell
+- AWS CLI v2.x or later
+- Appropriate AWS IAM permissions
+- Active AWS credentials
 
 ## Future Scripts
 

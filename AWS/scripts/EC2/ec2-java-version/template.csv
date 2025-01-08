@@ -1,0 +1,4 @@
+Instance ID,Name,Instance Type,State,Private IP,Public IP,Java Version,Access Method
+i-0123456789abcdef0,web-server-1,t3.medium,running,10.0.1.10,54.X.X.X,"openjdk version 11.0.20 2023-07-18 LTS",SSH
+i-0123456789abcdef1,app-server-1,r5.large,running,10.0.2.20,,"java version 1.8.0_342",SSM
+i-0123456789abcdef2,batch-server-1,c5.xlarge,stopped,10.0.3.30,,"Java not found",SSM 
