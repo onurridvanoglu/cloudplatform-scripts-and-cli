@@ -1,0 +1,6 @@
+Project ID,Instance Name,Zone,Java Status,Java Version
+sample-project-1,web-server-1,europe-west1-b,Installed,1.8.0_292
+sample-project-1,app-server-2,europe-west1-c,Installed,11.0.18
+sample-project-2,db-server-1,europe-west1-b,Not Installed,N/A
+sample-project-2,test-instance,europe-west1-d,Connection Failed,N/A
+sample-project-3,dev-server,europe-west1-b,Unknown,N/A 
