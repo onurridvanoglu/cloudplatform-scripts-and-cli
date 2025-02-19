@@ -2,6 +2,7 @@ import boto3
 import json
 import logging
 import os
+import time  # Add import for time.sleep
 from datetime import datetime
 
 # Set up logging
@@ -77,16 +78,25 @@ def restart_containers(instance_ids):
     """
     
     try:
-        response = ssm.send_command(
-            InstanceIds=instance_ids,
-            DocumentName='AWS-RunShellScript',
-            Parameters={'commands': [command]},
-            TimeoutSeconds=3600
-        )
+        # Process instances one by one with delay
+        for i, instance_id in enumerate(instance_ids):
+            # Add 5-second delay between instances (except for the first one)
+            if i > 0:
+                logger.info("Waiting 5 seconds before processing next instance...")
+                time.sleep(5)
+            
+            logger.info(f"Processing instance: {instance_id}")
+            response = ssm.send_command(
+                InstanceIds=[instance_id],  # Send to one instance at a time
+                DocumentName='AWS-RunShellScript',
+                Parameters={'commands': [command]},
+                TimeoutSeconds=3600
+            )
+            
+            command_id = response['Command']['CommandId']
+            logger.info(f"Successfully initiated jplatform container restart on instance {instance_id} with command ID: {command_id}")
         
-        command_id = response['Command']['CommandId']
-        logger.info(f"Successfully initiated jplatform container restart with command ID: {command_id}")
-        return command_id
+        return "Multiple command IDs generated - check logs for details"
         
     except Exception as e:
         logger.error(f"Error sending restart command: {str(e)}")

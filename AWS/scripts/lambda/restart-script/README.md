@@ -1,6 +1,6 @@
 # Docker Container Restart Lambda Function
 
-This Lambda function automatically restarts Docker containers running on EC2 instances on a scheduled basis.
+This Lambda function automatically restarts Docker containers named 'jplatform' running on EC2 instances on a scheduled basis. The function processes instances sequentially with a 5-second delay between each instance to ensure controlled rollout.
 
 ## Prerequisites
 
@@ -8,6 +8,7 @@ This Lambda function automatically restarts Docker containers running on EC2 ins
    - AWS Systems Manager Agent (SSM Agent) installed
    - Docker installed and running
    - An IAM role that allows Systems Manager access
+   - A Docker container named 'jplatform' running
 
 2. The Lambda function requires an IAM role with the following permissions:
    - AWSLambdaBasicExecutionRole
@@ -22,6 +23,7 @@ You can configure which instances to target using Lambda environment variables:
    - Set `TARGET_INSTANCE_IDS` environment variable
    - Format: Comma-separated list of instance IDs
    - Example: `i-1234567890abcdef0,i-0987654321fedcba0`
+   - Note: Instances will be processed in the order specified in this list
 
 2. **Instance Tags**:
    - Set `TARGET_TAG_KEY` and `TARGET_TAG_VALUE` environment variables
@@ -30,6 +32,15 @@ You can configure which instances to target using Lambda environment variables:
      - `TARGET_TAG_VALUE`: `Production`
 
 If no configuration is provided, the function will target all running instances.
+
+## Processing Behavior
+
+The function processes instances with the following behavior:
+1. Instances are processed one at a time
+2. First instance is processed immediately
+3. A 5-second delay is added before processing each subsequent instance
+4. Each instance's jplatform container is restarted using Docker's restart command
+5. Detailed logs are generated for each step in CloudWatch
 
 ## Setup Instructions
 
@@ -78,6 +89,7 @@ If no configuration is provided, the function will target all running instances.
    ```
    TARGET_INSTANCE_IDS = i-1234567890abcdef0,i-0987654321fedcba0
    ```
+   Note: The order of instance IDs matters as they will be processed sequentially.
 
    b. For instances with specific tags:
    ```
@@ -91,6 +103,10 @@ You can test the function by:
 1. Going to the Lambda console
 2. Creating a test event (empty JSON object `{}` is sufficient)
 3. Clicking the "Test" button
+4. Monitoring CloudWatch logs to observe:
+   - Sequential processing of instances
+   - 5-second delays between instances
+   - Success/failure of container restarts
 
 ## Monitoring
 
@@ -98,6 +114,17 @@ The function logs to CloudWatch Logs. You can monitor:
 - Function execution status
 - Number of instances processed
 - Container restart status for each instance
+- Timing of instance processing including delays
+- Command IDs for each SSM command execution
+
+Example log output:
+```
+Processing instance: i-1234567890abcdef0
+Successfully initiated jplatform container restart on instance i-1234567890abcdef0 with command ID: 12345
+Waiting 5 seconds before processing next instance...
+Processing instance: i-0987654321fedcba0
+Successfully initiated jplatform container restart on instance i-0987654321fedcba0 with command ID: 67890
+```
 
 ## Customization
 
@@ -110,5 +137,7 @@ Common issues:
 2. Insufficient IAM permissions
 3. Docker service not running on instances
 4. Network connectivity issues
+5. Container named 'jplatform' not found on instance
+6. Lambda timeout (if processing many instances)
 
-Check CloudWatch Logs for detailed error messages and execution status. 
+Check CloudWatch Logs for detailed error messages and execution status. Each instance processing step and delay is logged for easy troubleshooting. 
