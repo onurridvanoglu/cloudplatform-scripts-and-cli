@@ -17,7 +17,7 @@ This Lambda function automatically restarts Docker containers named 'jplatform' 
 
 ## Configuration Options
 
-You can configure which instances to target using Lambda environment variables:
+The function requires one of the following environment variable configurations (mandatory):
 
 1. **Specific Instance IDs**:
    - Set `TARGET_INSTANCE_IDS` environment variable
@@ -26,12 +26,12 @@ You can configure which instances to target using Lambda environment variables:
    - Note: Instances will be processed in the order specified in this list
 
 2. **Instance Tags**:
-   - Set `TARGET_TAG_KEY` and `TARGET_TAG_VALUE` environment variables
+   - Set BOTH `TARGET_TAG_KEY` and `TARGET_TAG_VALUE` environment variables
    - Example: 
      - `TARGET_TAG_KEY`: `Environment`
      - `TARGET_TAG_VALUE`: `Production`
 
-If no configuration is provided, the function will target all running instances.
+**Important**: The function will fail if neither of these configurations is provided. This is a safety measure to prevent accidental processing of all instances.
 
 ## Processing Behavior
 

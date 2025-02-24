@@ -16,8 +16,6 @@ ec2 = boto3.client('ec2')
 def get_running_instances():
     """Get running EC2 instances based on configuration"""
     try:
-        filters = [{'Name': 'instance-state-name', 'Values': ['running']}]
-        
         # Check for specific instance IDs in environment variable
         specific_instances = os.environ.get('TARGET_INSTANCE_IDS', '')
         if specific_instances:
@@ -30,21 +28,28 @@ def get_running_instances():
         target_tag_value = os.environ.get('TARGET_TAG_VALUE', '')
         
         if target_tag_key and target_tag_value:
-            filters.append({
-                'Name': f'tag:{target_tag_key}',
-                'Values': [target_tag_value]
-            })
+            filters = [
+                {'Name': 'instance-state-name', 'Values': ['running']},
+                {'Name': f'tag:{target_tag_key}', 'Values': [target_tag_value]}
+            ]
+            
             logger.info(f"Filtering instances by tag {target_tag_key}={target_tag_value}")
+            
+            instances = []
+            paginator = ec2.get_paginator('describe_instances')
+            for page in paginator.paginate(Filters=filters):
+                for reservation in page['Reservations']:
+                    instances.extend(reservation['Instances'])
+            
+            instance_ids = [inst['InstanceId'] for inst in instances]
+            logger.info(f"Found {len(instance_ids)} matching instances")
+            return instance_ids
         
-        instances = []
-        paginator = ec2.get_paginator('describe_instances')
-        for page in paginator.paginate(Filters=filters):
-            for reservation in page['Reservations']:
-                instances.extend(reservation['Instances'])
-        
-        instance_ids = [inst['InstanceId'] for inst in instances]
-        logger.info(f"Found {len(instance_ids)} matching instances")
-        return instance_ids
+        # If neither specific instances nor tags are provided, raise an error
+        raise ValueError(
+            "No target instances specified. Please set either TARGET_INSTANCE_IDS "
+            "or both TARGET_TAG_KEY and TARGET_TAG_VALUE environment variables."
+        )
         
     except Exception as e:
         logger.error(f"Error getting instances: {str(e)}")
