@@ -112,18 +112,81 @@ You can test the function by:
 
 The function logs to CloudWatch Logs. You can monitor:
 - Function execution status
-- Number of instances processed
+- Number of instances processed successfully and failed
 - Container restart status for each instance
 - Timing of instance processing including delays
-- Command IDs for each SSM command execution
+- Command IDs for each successful SSM command execution
+- Detailed error messages for failed instances
+- **Actual command output from each instance including:**
+  - Command execution status
+  - Standard output
+  - Standard error (if any)
 
 Example log output:
 ```
 Processing instance: i-1234567890abcdef0
-Successfully initiated jplatform container restart on instance i-1234567890abcdef0 with command ID: 12345
+Initiated jplatform container restart on instance i-1234567890abcdef0 with command ID: 12345
+Command output for instance i-1234567890abcdef0:
+Status: Success
+Output:
+Restarting jplatform container: abc123def456
+Successfully restarted jplatform container
+
 Waiting 5 seconds before processing next instance...
 Processing instance: i-0987654321fedcba0
-Successfully initiated jplatform container restart on instance i-0987654321fedcba0 with command ID: 67890
+Initiated jplatform container restart on instance i-0987654321fedcba0 with command ID: 67890
+Command output for instance i-0987654321fedcba0:
+Status: Failed
+Error: No jplatform container found running
+
+Processing complete. Successfully processed 1 instances, Failed to process 1 instances
+Failed instances:
+Instance i-0987654321fedcba0: Command failed with status Failed: No jplatform container found running
+```
+
+## Error Handling
+
+The script implements robust error handling:
+1. Each instance is processed independently
+2. If sending a command to one instance fails:
+   - The error is logged
+   - The instance is marked as failed
+   - The script continues processing remaining instances
+   - A summary of failures is provided at the end
+3. For each command execution:
+   - The script waits briefly for the command to complete
+   - Fetches and logs the actual command output
+   - Checks the command status
+   - Records both successful and failed executions
+4. The function returns a detailed results object containing:
+   - List of successfully processed instances with their command IDs and outputs
+   - List of failed instances with their error messages
+
+Example response:
+```json
+{
+    "statusCode": 200,
+    "body": {
+        "message": "Container restart initiated successfully",
+        "results": {
+            "successful": [
+                {
+                    "instance_id": "i-1234567890abcdef0",
+                    "command_id": "12345",
+                    "status": "Success",
+                    "output": "Restarting jplatform container: abc123def456\nSuccessfully restarted jplatform container"
+                }
+            ],
+            "failed": [
+                {
+                    "instance_id": "i-0987654321fedcba0",
+                    "error": "Command failed with status Failed: No jplatform container found running"
+                }
+            ]
+        },
+        "timestamp": "2024-01-01T03:00:00.000Z"
+    }
+}
 ```
 
 ## Customization
@@ -140,4 +203,74 @@ Common issues:
 5. Container named 'jplatform' not found on instance
 6. Lambda timeout (if processing many instances)
 
-Check CloudWatch Logs for detailed error messages and execution status. Each instance processing step and delay is logged for easy troubleshooting. 
+Check CloudWatch Logs for detailed error messages and execution status. Each instance processing step and delay is logged for easy troubleshooting.
+
+## Container State Logging
+
+The script logs container state information to `/var/log/container_stats.log` on each instance before performing a restart. Each log entry contains:
+
+1. **Timestamp** of the restart event
+2. **Container Status** (`docker ps -a` output)
+3. **Resource Usage** (`docker stats --no-stream` output)
+
+Example log file content:
+```
+=== Container Restart Event: 2024-01-01 03:00:00 ===
+Current Container Status:
+CONTAINER ID   IMAGE                COMMAND    STATUS          NAMES
+abc123def456   jplatform:latest    "..."      Up 2 days       jplatform
+
+Container Stats:
+CONTAINER ID   NAME        CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O
+abc123def456   jplatform   0.15%     1.2GiB / 16GiB        7.50%     12MB / 34MB      156MB / 23MB
+```
+
+The log file:
+- Appends new entries for each restart operation
+- Maintains historical container state data
+- Provides point-in-time snapshots of container status and resource usage
+
+## Error Handling
+
+The script implements robust error handling:
+1. Each instance is processed independently
+2. If sending a command to one instance fails:
+   - The error is logged
+   - The instance is marked as failed
+   - The script continues processing remaining instances
+   - A summary of failures is provided at the end
+3. For each command execution:
+   - The script waits briefly for the command to complete
+   - Fetches and logs the actual command output
+   - Checks the command status
+   - Records both successful and failed executions
+4. The function returns a detailed results object containing:
+   - List of successfully processed instances with their command IDs and outputs
+   - List of failed instances with their error messages
+
+Example response:
+```json
+{
+    "statusCode": 200,
+    "body": {
+        "message": "Container restart initiated successfully",
+        "results": {
+            "successful": [
+                {
+                    "instance_id": "i-1234567890abcdef0",
+                    "command_id": "12345",
+                    "status": "Success",
+                    "output": "Restarting jplatform container: abc123def456\nSuccessfully restarted jplatform container"
+                }
+            ],
+            "failed": [
+                {
+                    "instance_id": "i-0987654321fedcba0",
+                    "error": "Command failed with status Failed: No jplatform container found running"
+                }
+            ]
+        },
+        "timestamp": "2024-01-01T03:00:00.000Z"
+    }
+}
+```

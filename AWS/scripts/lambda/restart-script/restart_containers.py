@@ -55,24 +55,57 @@ def get_running_instances():
         logger.error(f"Error getting instances: {str(e)}")
         raise
 
+def get_command_output(command_id, instance_id):
+    """Get the command output from SSM for a specific instance"""
+    try:
+        # Wait briefly for command to complete
+        time.sleep(2)
+        response = ssm.get_command_invocation(
+            CommandId=command_id,
+            InstanceId=instance_id
+        )
+        return {
+            'Status': response['Status'],
+            'Output': response.get('StandardOutputContent', ''),
+            'Error': response.get('StandardErrorContent', '')
+        }
+    except Exception as e:
+        logger.error(f"Failed to get command output for instance {instance_id}: {str(e)}")
+        return {
+            'Status': 'Failed',
+            'Output': '',
+            'Error': f"Failed to get command output: {str(e)}"
+        }
+
 def restart_containers(instance_ids):
     """Restart Docker containers on specified instances"""
     if not instance_ids:
         logger.info("No running instances found")
         return
     
-    # Command to restart Docker containers
+    # Command to restart Docker containers with minimal state logging
     command = """
         #!/bin/bash
-        # Get jplatform container ID
-        container=$(docker ps -q --filter "name=jplatform")
+        
+        # Get current timestamp
+        timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+        
+        # Log separator and timestamp
+        echo "\\n=== Container Restart Event: $timestamp ===" >> /var/log/container_stats.log
+        
+        # Log current state
+        echo "Current Container Status:" >> /var/log/container_stats.log
+        sudo docker ps -a >> /var/log/container_stats.log
+        
+        echo "\\nContainer Stats:" >> /var/log/container_stats.log
+        sudo docker stats --no-stream >> /var/log/container_stats.log
+        
+        # Get jplatform container ID and restart
+        container=$(sudo docker ps -aq --filter "name=jplatform")
         
         if [ -n "$container" ]; then
-            echo "Restarting jplatform container: $container"
-            docker restart $container
-            if [ $? -eq 0 ]; then
-                echo "Successfully restarted jplatform container"
-            else
+            sudo docker restart $container
+            if [ $? -ne 0 ]; then
                 echo "Failed to restart jplatform container"
                 exit 1
             fi
@@ -82,9 +115,14 @@ def restart_containers(instance_ids):
         fi
     """
     
-    try:
-        # Process instances one by one with delay
-        for i, instance_id in enumerate(instance_ids):
+    results = {
+        'successful': [],
+        'failed': []
+    }
+    
+    # Process instances one by one with delay
+    for i, instance_id in enumerate(instance_ids):
+        try:
             # Add 5-second delay between instances (except for the first one)
             if i > 0:
                 logger.info("Waiting 5 seconds before processing next instance...")
@@ -92,20 +130,53 @@ def restart_containers(instance_ids):
             
             logger.info(f"Processing instance: {instance_id}")
             response = ssm.send_command(
-                InstanceIds=[instance_id],  # Send to one instance at a time
+                InstanceIds=[instance_id],
                 DocumentName='AWS-RunShellScript',
                 Parameters={'commands': [command]},
                 TimeoutSeconds=3600
             )
             
             command_id = response['Command']['CommandId']
-            logger.info(f"Successfully initiated jplatform container restart on instance {instance_id} with command ID: {command_id}")
-        
-        return "Multiple command IDs generated - check logs for details"
-        
-    except Exception as e:
-        logger.error(f"Error sending restart command: {str(e)}")
-        raise
+            logger.info(f"Initiated jplatform container restart on instance {instance_id} with command ID: {command_id}")
+            
+            # Get command output
+            command_output = get_command_output(command_id, instance_id)
+            logger.info(f"Command output for instance {instance_id}:")
+            logger.info(f"Status: {command_output['Status']}")
+            if command_output['Output']:
+                logger.info(f"Output:\n{command_output['Output']}")
+            if command_output['Error']:
+                logger.info(f"Error:\n{command_output['Error']}")
+            
+            if command_output['Status'] in ['Success', 'InProgress']:
+                results['successful'].append({
+                    'instance_id': instance_id,
+                    'command_id': command_id,
+                    'status': command_output['Status'],
+                    'output': command_output['Output']
+                })
+            else:
+                raise Exception(f"Command failed with status {command_output['Status']}: {command_output['Error']}")
+            
+        except Exception as e:
+            error_msg = f"Failed to process instance {instance_id}: {str(e)}"
+            logger.error(error_msg)
+            results['failed'].append({
+                'instance_id': instance_id,
+                'error': str(e)
+            })
+            continue
+    
+    # Log summary
+    logger.info(f"Processing complete. Successfully processed {len(results['successful'])} instances, "
+                f"Failed to process {len(results['failed'])} instances")
+    
+    if results['failed']:
+        logger.error("Failed instances:")
+        for failure in results['failed']:
+            logger.error(f"Instance {failure['instance_id']}: {failure['error']}")
+    
+    return results
 
 def lambda_handler(event, context):
     """Main Lambda handler"""
@@ -115,14 +186,13 @@ def lambda_handler(event, context):
         logger.info(f"Found {len(instance_ids)} running instances")
         
         # Restart containers on all instances
-        command_id = restart_containers(instance_ids)
+        results = restart_containers(instance_ids)
         
         return {
             'statusCode': 200,
             'body': json.dumps({
                 'message': 'Container restart initiated successfully',
-                'commandId': command_id,
-                'instanceCount': len(instance_ids),
+                'results': results,
                 'timestamp': datetime.now().isoformat()
             })
         }
